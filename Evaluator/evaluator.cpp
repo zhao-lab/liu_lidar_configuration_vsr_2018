@@ -53,6 +53,8 @@ bool comp_yzx(const coord &a, const coord &b)
   else
     return true;
 }
+
+
 extern "C" 
 float subspace_segmentation(int* cube_num, float* cube_resolution, int* dead_zone_index,float* lidar_origin,int lidar_num,
 			  int laser_num,long subspace_num_max,float* pitch_angle,float* result)
@@ -71,15 +73,19 @@ float subspace_segmentation(int* cube_num, float* cube_resolution, int* dead_zon
   int dead_z_high=*(dead_zone_index+5);
   
   int *subspace_cube_num= new int[subspace_num_max]();//={0};
+  
+  // all the cube coordinates will be stored in this vector
+  // e.g. subspace_cube_coordinate[i] represents the cubes' coordinates in the i-th subspace
   vector<coord> *subspace_cube_coordinate= new vector<coord>[subspace_num_max]();
   
+  // determine which subspace the cubes belong to
   for(int i=0;i<cube_x_num;i++)
   {
    for(int j=0;j<cube_y_num;j++)
    {
     for(int k=0;k<cube_z_num;k++)
     {
-      //determine whether the cube is located in the dead zone
+      //determine whether the cube is located in the dead zone. If so, skip
       if(i>=dead_x_low && i<=dead_x_high && j>=dead_y_low && j<=dead_y_high && k>=dead_z_low && k<=dead_z_high)
 	continue;
       int subspace_index=0;
@@ -96,6 +102,7 @@ float subspace_segmentation(int* cube_num, float* cube_resolution, int* dead_zon
 	float yaw=*(lidar_origin+6*m+5);
 	Eigen::Vector3f euler_angle(yaw,pitch,roll);  
 	Eigen::Matrix3f R;  
+	//compute rotation matrix from r p y
 	R = Eigen::AngleAxisf(euler_angle[0], Eigen::Vector3f::UnitZ())  
 	    * Eigen::AngleAxisf(euler_angle[1], Eigen::Vector3f::UnitY())  
 	    * Eigen::AngleAxisf(euler_angle[2], Eigen::Vector3f::UnitX()); 
@@ -132,17 +139,20 @@ float subspace_segmentation(int* cube_num, float* cube_resolution, int* dead_zon
     }
    }
   } 
+  // store the VSR of the subspaces
   vector<float> vsr; 
- 
+  
+  // iterate all the subspaces and compute their VSR
   for(int i=0;i<subspace_num_max;i++)
   {
-    if(subspace_cube_num[i]==0)
+    if(subspace_cube_num[i]==0)   //this subspace does not contain any cube
       continue;
     /**************************************BFS sub-segmentation****************************************/
-    vector<vector<coord>> results;
-    int coord_num=subspace_cube_coordinate[i].size();
+    vector<vector<coord>> results;  // store the cubes' coordinates of the segmented sub - subspace
+    int coord_num=subspace_cube_coordinate[i].size();   
     int visited[coord_num]={0};
     int k=0;
+    // I commentted the BFS segmentation because it is very inefficient and computational expensive.
      /*
     while(accumulate(visited,visited+coord_num,0)<coord_num)
     {
@@ -174,8 +184,13 @@ float subspace_segmentation(int* cube_num, float* cube_resolution, int* dead_zon
      results.push_back(tmp_cluster);
     }
     */
+
     results.push_back(subspace_cube_coordinate[i]);
     // comment the above line if the LiDAR number is not 1
+    
+    // Iterate all the cubes in the sub-subspace and compute their surface area.
+    // The algorithm is a little bit tricky because we firstly compute the overlap faces of the cubes from 3 directions, 
+    // and then get the surface area
     for(int m=0;m<results.size();m++)
     {
       vector<coord> tmp_cluster=results[m];
@@ -242,6 +257,7 @@ float subspace_segmentation(int* cube_num, float* cube_resolution, int* dead_zon
       vsr.push_back(vsr_tmp);
     }
   }
+  
   //find the maximum vsr
   float vsr_max=*max_element(vsr.begin(),vsr.end());
   float vsr_min=*min_element(vsr.begin(),vsr.end());
@@ -263,6 +279,8 @@ float subspace_segmentation(int* cube_num, float* cube_resolution, int* dead_zon
   *(result+3)=mean;
   return vsr_max;
 }
+
+// This function is used to compute how many subspaces are visited by the input big cube
 extern "C" 
 int ROI_occupy_subspace_num(int* cube_num, float* cube_resolution, int* dead_zone_index,float* lidar_origin,int lidar_num,
 			  int laser_num,long subspace_num_max,float* pitch_angle,int* start_point)
