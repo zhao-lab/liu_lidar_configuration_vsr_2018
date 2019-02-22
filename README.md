@@ -20,8 +20,11 @@ python test.py
 
 ## Code organization
 
-The `Evaluator` folder contains the C++ implementation of our solver. 
+The `Evaluator` folder contains the C++ implementation of our solver.
+ 
 The `Evaluator.py` is the python interface of the solver.
+
 The `Hive` folder is the ABC optimization algorithm implemented by [https://github.com/rwuilbercq/Hive](https://github.com/rwuilbercq/Hive). 
+
 The `Result` folder saves the running results.
 
