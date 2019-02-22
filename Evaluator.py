@@ -118,11 +118,11 @@ class Evaluator(object):
             re.append(result[i])
         return re[0]
 
-class ROISubspaceOccupyNumber(object):
-    """Creates a inscribed sphere solver object"""
 
-    def __init__(self, roi_shape=[10, 10, 10],lidar_origin=[0, 0, 0], dead_zone=[0,0,0,0,0,0], cube_resolution=[1, 1, 1], lidar_num=1,
-                 laser_num=2,pitch_angle=[-10, 10],obj_size=[1,1,1]):
+class ROISubspaceOccupyNumber(object):
+    """This class is used to find the relation between VSR and object detection rate"""
+
+    def __init__(self, roi_shape=[10, 10, 10],lidar_origin=[0, 0, 0], dead_zone=[0,0,0,0,0,0], cube_resolution=[1, 1, 1], lidar_num=1, laser_num=2,pitch_angle=[-10, 10],obj_size=[1,1,1]):
         """
 
         Parameters:
