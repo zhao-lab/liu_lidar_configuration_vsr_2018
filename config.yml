@@ -1,6 +1,6 @@
 roi_shape : [60, 20, 4]
-dead_zone : [27, 33, 8, 12, 0, 4]
-cube_resolution : [1, 1, 0.2]
+dead_zone : [27, 33, 8, 12, 0, 4]  # cubes within this zone will not be considered
+cube_resolution : [1, 1, 0.2]  
 lower_bound : [28, 9, 2.2, 0, 0, 0] # minimum [x,y,z,roll,pitch,yaw] for each LiDAR
 upper_bound : [31, 11, 3,  3.1415, 3.1415, 3] # maximum [x,y,z,roll,pitch,yaw] for each LiDAR
 laser_num : 16 # number of beams
